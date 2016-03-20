@@ -41,7 +41,7 @@ public class GraphicalInterface extends Application {
     //-----------------------------
     //static
     private final static int size = 40;     //in our board of labels width=height
-    private static String windowName = "SNAKE - alpha compilation";
+    private static String windowName = "SNAKE - alpha compilation test";
     private static int windowWidth = size * 20;
     private static int windowHeight = size * 20;
     private static int fps = 4;             //how many frames/moves are in one second
