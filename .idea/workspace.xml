@@ -53,6 +53,13 @@
           </provider>
         </entry>
       </file>
+      <file leaf-file-name="green.png" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/content/resources/green.png">
+          <provider selected="true" editor-type-id="images">
+            <state />
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="GraphicalInterface.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/content/GraphicalInterface.java">
           <provider selected="true" editor-type-id="text-editor">
@@ -804,7 +811,7 @@
       <workItem from="1458406928760" duration="2901000" />
       <workItem from="1458477102400" duration="122000" />
       <workItem from="1458478319718" duration="4036000" />
-      <workItem from="1458487754844" duration="3799000" />
+      <workItem from="1458487754844" duration="3916000" />
     </task>
     <task id="LOCAL-00001" summary="Initializaiton commit.&#10;Added window displaying, mouseEvents, grid layout, 3 images(not comminted)&#10;&#10;There is no snake at all, just its tile abstract representation(mouse painting)&#10;Code is pretty clean and commented right now">
       <created>1457882025913</created>
@@ -816,10 +823,10 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="25909000" />
+    <option name="totallyTimeSpent" value="26026000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="55" y="-8" width="1873" height="1096" extended-state="7" />
+    <frame x="55" y="-8" width="1873" height="1096" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1144,11 +1151,6 @@
         <state />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/content/resources/green.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/content/resources/grey.png">
       <provider selected="true" editor-type-id="images">
         <state />
@@ -1211,6 +1213,11 @@
           <caret line="54" column="0" selection-start-line="54" selection-start-column="0" selection-end-line="55" selection-end-column="52" />
           <folding />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/content/resources/green.png">
+      <provider selected="true" editor-type-id="images">
+        <state />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/content/resources/brick.png">
