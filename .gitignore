@@ -1,0 +1,10 @@
+/build/
+/dist/
+nbproject/build-impl.xml
+build.xml
+manifest.mf
+nbproject/private/configs/Run_as_WebStart.properties
+*.properties
+nbproject/jfx-impl.xml
+*.xml
+src/content/GraphicalInterface.java
