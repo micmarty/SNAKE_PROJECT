@@ -1,0 +1,7 @@
+/build/
+/dist/
+nbproject/*.*
+*.properties
+build.xml
+manifest.mf
+nbproject/private/private.xml
