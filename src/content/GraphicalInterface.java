@@ -29,6 +29,8 @@ public class GraphicalInterface extends Application {
     private Scene mainScene;                //scene that holds whole content
     private GridPane grid;                  //layout to store our labels
 
+    //Important for FPS calculations
+    private long previousFrameTime;         //time in nanosecond of the latest frame
 
     private Image bg;                       //background
     private Image red;
@@ -41,7 +43,7 @@ public class GraphicalInterface extends Application {
     private static String windowName = "SNAKE - alpha compilation";
     private static int windowWidth = 10+40*20+10;
     private static int windowHeight = 10+40*20+10;
-
+    private static int fps = 4;             //how many frames/moves are in one second
 
     private final static int size = 40;     //in our board of labels width=height
     Label[][] board = new Label[size][size];
@@ -116,7 +118,6 @@ public class GraphicalInterface extends Application {
     }
 
 
-
     //IT IS TECHNICALLY OUR MAIN //(learned from documentation)
     @Override                               //override javaFX native method
     public void start(Stage primaryStage) throws Exception{
@@ -129,7 +130,7 @@ public class GraphicalInterface extends Application {
 
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
-            snake.move(event.getCode());    //call snake method, to filter the input, then move
+            snake.setHead(event.getCode());    //call snake method, to filter the input and choose further direction
             //event.consume();                //dont allow to propagete event value further(next calls)
         };
 
@@ -139,17 +140,26 @@ public class GraphicalInterface extends Application {
         window.setScene(mainScene);
         window.show();                      //display mainScene on the window
 
-        /* GAME LOOP. we must mull this over, how we'll handle everything in here
-          * TODO framerate controll, constant snake movement(only once per second)
-           * TODO now it works when key is pressed(so no time dependency)*/
+        /* GAME LOOP. we must mull this over, how we'll handle everything in here*/
         AnimationTimer timer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                //user input
-                for(Point e : snake.wholeSnake()){// 'e' means element
-                    board[e.x][e.y].setGraphic(new ImageView(blue));
+                //helpful for managing frames, second is 10^9 nanoseconds
+                long second = 1000000000;
+                long timeBetweenFrames = now - previousFrameTime;
+
+                //FPS = 1s/timeBetweenFrames or if it's first frame!!!
+                // (because previousFrameTime is 0 before hitting the  if statement;
+                if(second/timeBetweenFrames == fps || previousFrameTime == 0){
+                    snake.move();               //update snake's position
+
+                    /*  refresh/add only head to the board, more optimal solution  */
+                    Point h = snake.getHead();  //h for shortcut in line below
+                    board[h.x][h.y].setGraphic(new ImageView(blue));
+
+                    previousFrameTime = now;    //save current frame as older than next 'now' values
                 }
-                //update
+                //comments below are partly done above
                 //render
                 //sync
             }
