@@ -37,15 +37,16 @@ public class GraphicalInterface extends Application {
     private Image yellow;
     private Image blue;
     private Image green;
-
+    private Image brick;
     //-----------------------------
     //static
+    private final static int size = 40;     //in our board of labels width=height
     private static String windowName = "SNAKE - alpha compilation";
-    private static int windowWidth = 10+40*20+10;
-    private static int windowHeight = 10+40*20+10;
+    private static int windowWidth = size * 20;
+    private static int windowHeight = size * 20;
     private static int fps = 4;             //how many frames/moves are in one second
 
-    private final static int size = 40;     //in our board of labels width=height
+
     Label[][] board = new Label[size][size];
 
 
@@ -102,13 +103,14 @@ public class GraphicalInterface extends Application {
         yellow = new Image(getClass().getResourceAsStream("resources/yellow.png"));
         blue = new Image(getClass().getResourceAsStream("resources/blue.png"));
         green = new Image(getClass().getResourceAsStream("resources/green.png"));
+        brick = new Image(getClass().getResourceAsStream("resources/brick.png"));
     }
 
     /*  initializing variables/resources only   */
     @Override                                //override javaFX native method
     public void init(){
         grid = new GridPane();
-        grid.setPadding(new Insets(10,10,10,10));//10 pixel padding on each side
+        grid.setPadding(new Insets(0,0,0,0));    //0 pixel padding on each side
         grid.setVgap(0);                         //vertical spacing between each label
         grid.setHgap(0);                         //horizontal spacing
 
@@ -127,11 +129,17 @@ public class GraphicalInterface extends Application {
         mainScene = new Scene(grid,windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
 
         Snake snake = new Snake(4,5);
+        PeripheralWall peripheralWall = new PeripheralWall(size);
+
+        //display wall only once
+        for(Point w : peripheralWall.getWall()){// 'e' means element
+            board[w.x][w.y].setGraphic(new ImageView(brick));
+        }
 
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
             snake.setHead(event.getCode());    //call snake method, to filter the input and choose further direction
-            //event.consume();                //dont allow to propagete event value further(next calls)
+            //event.consume();                 //don't allow to propagete event value further(next calls)
         };
 
         //add event handler constructed right above this line to WHOLE WINDOW(mainScene)^
@@ -150,13 +158,12 @@ public class GraphicalInterface extends Application {
 
                 //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                 // (because previousFrameTime is 0 before hitting the  if statement;
-                if(second/timeBetweenFrames == fps || previousFrameTime == 0){
+                if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
                     snake.move();               //update snake's position
 
                     /*  refresh/add only head to the board, more optimal solution  */
                     Point h = snake.getHead();  //h for shortcut in line below
                     board[h.x][h.y].setGraphic(new ImageView(blue));
-
                     previousFrameTime = now;    //save current frame as older than next 'now' values
                 }
                 //comments below are partly done above
