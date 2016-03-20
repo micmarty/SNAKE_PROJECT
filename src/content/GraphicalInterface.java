@@ -155,7 +155,6 @@ public class GraphicalInterface extends Application {
                 //helpful for managing frames, second is 10^9 nanoseconds
                 long second = 1000000000;
                 long timeBetweenFrames = now - previousFrameTime;
-                System.out.print("TO ma byc!");
                 //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                 // (because previousFrameTime is 0 before hitting the  if statement;
                 if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
