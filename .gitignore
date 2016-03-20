@@ -1,0 +1,9 @@
+/build/
+/dist/
+nbproject/project.xml
+*.properties
+nbproject/private/private.xml
+nbproject/build-impl.xml
+build.xml
+manifest.mf
+nbproject/jfx-impl.xml
