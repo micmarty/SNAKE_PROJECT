@@ -1,4 +1,9 @@
-# Windows image file caches
+build/*
+dist/*
+nbproject/*
+build.xml
+manifest.mf
+.gitignore# Windows image file caches
 Thumbs.db
 ehthumbs.db
 
@@ -51,3 +56,8 @@ Temporary Items
 .xml
 .name
 .idea/workspace.xml
+build/*
+dist/*
+nbproject/*
+build.xml*
+manifest.mf
