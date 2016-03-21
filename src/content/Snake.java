@@ -27,7 +27,7 @@ public class Snake {
        // body.add(head);                 //save head as a body now
         switch (lastKey){
             case W:
-                if(mask[this.head.x][this.head.y-1] == 0){        //check if              
+                if(mask[this.head.x][this.head.y-1] == BarrierType.EMPTY.value){        //check if              
                     body.add(head);
                     head.translate(0,-1);   //x stays the same, y one upper
                 }
@@ -35,7 +35,7 @@ public class Snake {
                     System.out.println("boom");
                 break;
             case S:
-                if(mask[this.head.x][this.head.y+1] == 0){
+                if(mask[this.head.x][this.head.y+1] == BarrierType.EMPTY.value){
                     body.add(head);
                     head.translate(0,1);    //x stays the same, y one down
                 }
@@ -43,7 +43,7 @@ public class Snake {
                     System.out.println("boom");
                 break;
             case A:
-                if(mask[this.head.x-1][this.head.y] == 0){
+                if(mask[this.head.x-1][this.head.y] == BarrierType.EMPTY.value){
                     body.add(head);
                     head.translate(-1,0);   //x one left, y stays the same              
                 }
@@ -51,7 +51,7 @@ public class Snake {
                     System.out.println("boom");
                 break;
             case D:
-                if(mask[this.head.x+1][this.head.y] == 0){
+                if(mask[this.head.x+1][this.head.y] == BarrierType.EMPTY.value){
                     body.add(head);
                     head.translate(1,0);    //x one right, y stays the same
                 }

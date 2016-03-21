@@ -21,7 +21,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 
 import java.awt.*;
+ enum BarrierType {
+    EMPTY(0), BLUE_SNAKE(1), WALL(9);
+    public final int value;
 
+    private BarrierType(int value) {
+        this.value = value;
+    }
+}
 public class GraphicalInterface extends Application {
     //---------------------------
     //private
@@ -134,7 +141,7 @@ public class GraphicalInterface extends Application {
         //display wall only once
         for(Point w : peripheralWall.getWall()){// 'e' means element
             board[w.x][w.y].setGraphic(new ImageView(brick));
-            mask[w.x][w.y] = 9;
+            mask[w.x][w.y] = BarrierType.WALL.value;
         }
 
         //EVENT FOR KEYBOARD
