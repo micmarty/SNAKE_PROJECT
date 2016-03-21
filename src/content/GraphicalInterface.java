@@ -21,10 +21,12 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 
 import java.awt.*;
+
+//Enum holding types of barriers
  enum BarrierType {
     EMPTY(0), BLUE_SNAKE(1), WALL(9);
     public final int value;
-
+        /*  initializing Enum Types by value in brackets            */
     private BarrierType(int value) {
         this.value = value;
     }
@@ -64,7 +66,7 @@ public class GraphicalInterface extends Application {
         for(int x = 0; x < size; x++)
             for(int y = 0; y < size; y++){
                 board[x][y] = new Label();          //calling constructor
-                mask[x][y] = 0;
+                mask[x][y] = BarrierType.EMPTY.value; //upgrading mask
                 //must-have variables for lambda expression
                 final int finalX = x;
                 final int finalY = y;
@@ -139,9 +141,9 @@ public class GraphicalInterface extends Application {
         PeripheralWall peripheralWall = new PeripheralWall(size);
 
         //display wall only once
-        for(Point w : peripheralWall.getWall()){// 'e' means element
-            board[w.x][w.y].setGraphic(new ImageView(brick));
-            mask[w.x][w.y] = BarrierType.WALL.value;
+        for(Point w : peripheralWall.getWall()){// 'w' means element
+            board[w.x][w.y].setGraphic(new ImageView(brick)); // adding walls 
+            mask[w.x][w.y] = BarrierType.WALL.value; //upgrading mask
         }
 
         //EVENT FOR KEYBOARD
@@ -171,7 +173,7 @@ public class GraphicalInterface extends Application {
                     /*  refresh/add only head to the board, more optimal solution  */
                     Point h = snake.getHead();  //h for shortcut in line belw
                     board[h.x][h.y].setGraphic(new ImageView(blue));
-                    mask[h.x][h.y] = 1;
+                    mask[h.x][h.y] = BarrierType.BLUE_SNAKE.value;
                     
                     previousFrameTime = now;    //save current frame as older than next 'now' values
                 }
