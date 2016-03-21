@@ -48,7 +48,7 @@ public class GraphicalInterface extends Application {
 
 
     Label[][] board = new Label[size][size];
-
+    int[][] mask = new int[size][size]; //mask containing position of snakes, walls, etc
 
     //----------------------------
     //methods
@@ -57,7 +57,7 @@ public class GraphicalInterface extends Application {
         for(int x = 0; x < size; x++)
             for(int y = 0; y < size; y++){
                 board[x][y] = new Label();          //calling constructor
-
+                mask[x][y] = 0;
                 //must-have variables for lambda expression
                 final int finalX = x;
                 final int finalY = y;
@@ -98,7 +98,7 @@ public class GraphicalInterface extends Application {
     /*  initializing multiple Image references to class variables   */
     private void initImages() {
         //basic textures, we can use Colors instead of Images
-        bg = new Image(getClass().getResourceAsStream("resources/grey.png"));   //bg - background
+        bg = new Image(getClass().getResourceAsStream("resources/bg.png"));   //bg - background
         red = new Image(getClass().getResourceAsStream("resources/red.png"));
         yellow = new Image(getClass().getResourceAsStream("resources/yellow.png"));
         blue = new Image(getClass().getResourceAsStream("resources/blue.png"));
@@ -134,6 +134,7 @@ public class GraphicalInterface extends Application {
         //display wall only once
         for(Point w : peripheralWall.getWall()){// 'e' means element
             board[w.x][w.y].setGraphic(new ImageView(brick));
+            mask[w.x][w.y] = 9;
         }
 
         //EVENT FOR KEYBOARD
@@ -158,11 +159,13 @@ public class GraphicalInterface extends Application {
                 //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                 // (because previousFrameTime is 0 before hitting the  if statement;
                 if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
-                    snake.move();               //update snake's position
+                    snake.move(mask);               //update snake's position
 
                     /*  refresh/add only head to the board, more optimal solution  */
-                    Point h = snake.getHead();  //h for shortcut in line below
+                    Point h = snake.getHead();  //h for shortcut in line belw
                     board[h.x][h.y].setGraphic(new ImageView(blue));
+                    mask[h.x][h.y] = 1;
+                    
                     previousFrameTime = now;    //save current frame as older than next 'now' values
                 }
                 //comments below are partly done above
