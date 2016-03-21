@@ -127,6 +127,15 @@ public class GraphicalInterface extends Application {
         initBoard();                //call board initialization method
         initLabelToGridAssignment();//bind board tiles to proper place in grid
     }
+    
+    /* initializing walls*/
+    public void initWalls(PeripheralWall peripheralWall){
+        for(Point w : peripheralWall.getWall()){// 'w' means element
+            board[w.x][w.y].setGraphic(new ImageView(brick)); // adding walls 
+            mask[w.x][w.y] = BarrierType.WALL.value; //upgrading mask
+        }
+
+    }
 
 
     //IT IS TECHNICALLY OUR MAIN //(learned from documentation)
@@ -139,13 +148,11 @@ public class GraphicalInterface extends Application {
 
         Snake snake = new Snake(4,5);
         PeripheralWall peripheralWall = new PeripheralWall(size);
+        
+        
 
         //display wall only once
-        for(Point w : peripheralWall.getWall()){// 'w' means element
-            board[w.x][w.y].setGraphic(new ImageView(brick)); // adding walls 
-            mask[w.x][w.y] = BarrierType.WALL.value; //upgrading mask
-        }
-
+        initWalls(peripheralWall);
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
             snake.setHead(event.getCode());    //call snake method, to filter the input and choose further direction
@@ -157,30 +164,54 @@ public class GraphicalInterface extends Application {
 
         window.setScene(mainScene);
         window.show();                      //display mainScene on the window
-
+        
+        
         /* GAME LOOP. we must mull this over, how we'll handle everything in here*/
-        AnimationTimer timer = new AnimationTimer() {
+        AnimationTimer timer;
+        timer = new AnimationTimer() {
+            int turnsNumber =3;
             @Override
             public void handle(long now) {
-                //helpful for managing frames, second is 10^9 nanoseconds
-                long second = 1000000000;
-                long timeBetweenFrames = now - previousFrameTime;
-                //FPS = 1s/timeBetweenFrames or if it's first frame!!!
-                // (because previousFrameTime is 0 before hitting the  if statement;
-                if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
-                    snake.move(mask);               //update snake's position
+                if(snake.getLife()>0){
+                    //helpful for managing frames, second is 10^9 nanoseconds
+                    long second = 1000000000;
+                    long timeBetweenFrames = now - previousFrameTime;
+                    //FPS = 1s/timeBetweenFrames or if it's first frame!!!
+                    // (because previousFrameTime is 0 before hitting the  if statement;
+                    if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
+                        snake.move(mask);               //update snake's position
 
-                    /*  refresh/add only head to the board, more optimal solution  */
-                    Point h = snake.getHead();  //h for shortcut in line belw
-                    board[h.x][h.y].setGraphic(new ImageView(blue));
-                    mask[h.x][h.y] = BarrierType.BLUE_SNAKE.value;
-                    
-                    previousFrameTime = now;    //save current frame as older than next 'now' values
+                        /*  refresh/add only head to the board, more optimal solution  */
+                        Point h = snake.getHead();  //h for shortcut in line belw
+                        board[h.x][h.y].setGraphic(new ImageView(blue));
+                        mask[h.x][h.y] = BarrierType.BLUE_SNAKE.value;
+
+                        previousFrameTime = now;    //save current frame as older than next 'now' values
+                    }
+                    //comments below are partly done above
+                    //render
+                    //sync
                 }
-                //comments below are partly done above
-                //render
-                //sync
+                else{
+                    
+                    if(turnsNumber>1){
+                        //preparation for new
+                        initImages();               //call Images initialization for further use
+                        initBoard();                //call board initialization method
+                        initLabelToGridAssignment();//bind board tiles to proper place in grid
+                        initWalls(peripheralWall);
+                        
+                        System.out.println("Lost");
+                        snake.SnakeReady(4, 5);
+                        turnsNumber=turnsNumber-1;
+                    
+                    }
+                    else
+                        System.out.println("Game over!");
+                    
+                }
             }
+            
         };
         timer.start();
     }

@@ -1,10 +1,11 @@
+
 package content;
 
 import java.awt.*;
 import java.util.ArrayList;
 
 /**
- * Created by Michał Martyniak on 20.03.2016.
+ * Created by Michał Martyniak and company on 20.03.2016.
  */
 public class PeripheralWall {
     private ArrayList<Point> segments; //holds Wall segments
