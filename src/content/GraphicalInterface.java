@@ -2,6 +2,7 @@ package content;
 
 import javafx.application.Application;
 
+import javafx.application.Platform;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -22,15 +23,7 @@ import javafx.scene.layout.GridPane;
 
 import java.awt.*;
 
-//Enum holding types of barriers
- enum BarrierType {
-    EMPTY(0), BLUE_SNAKE(1), WALL(9);
-    public final int value;
-        /*  initializing Enum Types by value in brackets            */
-    private BarrierType(int value) {
-        this.value = value;
-    }
-}
+
 public class GraphicalInterface extends Application {
     //---------------------------
     //private
@@ -42,11 +35,7 @@ public class GraphicalInterface extends Application {
     private long previousFrameTime;         //time in nanosecond of the latest frame
 
     private Image bg;                       //background
-    private Image red;
-    private Image yellow;
-    private Image blue;
-    private Image green;
-    private Image brick;
+    private Image brick;                    //peripheral wall
     //-----------------------------
     //static
     private final static int size = 40;     //in our board of labels width=height
@@ -54,44 +43,24 @@ public class GraphicalInterface extends Application {
     private static int windowWidth = size * 20;
     private static int windowHeight = size * 20;
     private static int fps = 4;             //how many frames/moves are in one second
+    private static int roundsToPlay = 3;    //how many round have to be done until the game ends
 
+    private Label[][] board = new Label[size][size];
+    private BarrierType[][] mask = new BarrierType[size][size]; //mask containing position of snakes, walls, etc
 
-    Label[][] board = new Label[size][size];
-    int[][] mask = new int[size][size]; //mask containing position of snakes, walls, etc
 
     //----------------------------
     //methods
     /*  initializing just our board             */
-    private void initBoard(){
+    private void initBoard(boolean refreshOnly){
         for(int x = 0; x < size; x++)
             for(int y = 0; y < size; y++){
-                board[x][y] = new Label();          //calling constructor
-                mask[x][y] = BarrierType.EMPTY.value; //upgrading mask
-                //must-have variables for lambda expression
-                final int finalX = x;
-                final int finalY = y;
 
-                board[x][y].setOnMousePressed(e->{              //lambda expression for event handling
-                    System.out.println(finalX + "," + finalY);  //display coordinates in console
-                    Image newTileImage=bg;                      //another constant that holds reference for assigning new color of a tile
+                if(!refreshOnly)//important(if snake dies, we dont need to reallocate memory for labels
+                    board[x][y] = new Label();                  //calling constructor
+                board[x][y].setGraphic(new ImageView(bg));  //always fill board with background color
+                mask[x][y] = BarrierType.EMPTY;             //updating mask
 
-                    //doesn't work while event is mouseEntered.
-                    //In order to change the newTileImage use setOnMouseClicked
-
-                    if(e.isPrimaryButtonDown())
-                        newTileImage = red;
-                    else if(e.isSecondaryButtonDown())
-                        newTileImage = yellow;
-                    else if(e.isMiddleButtonDown())
-                        newTileImage = blue;
-                    else if(e.isSecondaryButtonDown() && e.isPrimaryButtonDown())
-                        newTileImage = green;
-
-
-                    board[finalX][finalY].setGraphic(new ImageView(newTileImage));   //assigning new Image for event-caller
-                });
-
-                board[x][y].setGraphic(new ImageView(bg));                           //always fill board with background color
             }
     }
 
@@ -108,10 +77,6 @@ public class GraphicalInterface extends Application {
     private void initImages() {
         //basic textures, we can use Colors instead of Images
         bg = new Image(getClass().getResourceAsStream("resources/bg.png"));   //bg - background
-        red = new Image(getClass().getResourceAsStream("resources/red.png"));
-        yellow = new Image(getClass().getResourceAsStream("resources/yellow.png"));
-        blue = new Image(getClass().getResourceAsStream("resources/blue.png"));
-        green = new Image(getClass().getResourceAsStream("resources/green.png"));
         brick = new Image(getClass().getResourceAsStream("resources/brick.png"));
     }
 
@@ -124,7 +89,8 @@ public class GraphicalInterface extends Application {
         grid.setHgap(0);                         //horizontal spacing
 
         initImages();               //call Images initialization for further use
-        initBoard();                //call board initialization method
+        initBoard(false);            //call board initialization method
+                                    //'false' means - force allocating memory for labels
         initLabelToGridAssignment();//bind board tiles to proper place in grid
     }
     
@@ -132,7 +98,7 @@ public class GraphicalInterface extends Application {
     public void initWalls(PeripheralWall peripheralWall){
         for(Point w : peripheralWall.getWall()){// 'w' means element
             board[w.x][w.y].setGraphic(new ImageView(brick)); // adding walls 
-            mask[w.x][w.y] = BarrierType.WALL.value; //upgrading mask
+            mask[w.x][w.y] = BarrierType.WALL; //upgrading mask
         }
 
     }
@@ -146,7 +112,7 @@ public class GraphicalInterface extends Application {
 
         mainScene = new Scene(grid,windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
 
-        Snake snake = new Snake(4,5);
+        Snake snake = new Snake(new Point(9,9));
         PeripheralWall peripheralWall = new PeripheralWall(size);
         
         
@@ -169,49 +135,55 @@ public class GraphicalInterface extends Application {
         /* GAME LOOP. we must mull this over, how we'll handle everything in here*/
         AnimationTimer timer;
         timer = new AnimationTimer() {
-            int turnsNumber =3;
             @Override
             public void handle(long now) {
-                if(snake.getLife()>0){
+
                     //helpful for managing frames, second is 10^9 nanoseconds
                     long second = 1000000000;
                     long timeBetweenFrames = now - previousFrameTime;
+
+                    //simplifying must-have statements (right side returns TRUE or FALSE)
+                    boolean isAlive = (snake.getLifeStatus() == LifeStatus.ALIVE);
+                    boolean isProperFrame = (second/timeBetweenFrames <= fps || previousFrameTime == 0);
+
                     //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                     // (because previousFrameTime is 0 before hitting the  if statement;
-                    if(second/timeBetweenFrames <= fps || previousFrameTime == 0){
-                        snake.move(mask);               //update snake's position
+                    if(isProperFrame){
+                        if(isAlive){
+                            snake.considerAction(mask);         //update snake's position
 
-                        /*  refresh/add only head to the board, more optimal solution  */
-                        Point h = snake.getHead();  //h for shortcut in line belw
-                        board[h.x][h.y].setGraphic(new ImageView(blue));
-                        mask[h.x][h.y] = BarrierType.BLUE_SNAKE.value;
+                            //refresh/add only head to the board, more optimal solution
+                            Point h = snake.getHead();          //h for shortcut in line below
+                            board[h.x][h.y].setGraphic(new ImageView(snake.getImage()));
+                            mask[h.x][h.y] = BarrierType.BLUE_SNAKE;
+                        }else{//is DEAD or RESIGNED
+                            if(roundsToPlay > 1) {              //there's no sense in rebuilding game, when it was the least
+                                //if sneak is dead, this method makes him alive again
+                                snake.setReady(new Point(9, 9));
 
-                        previousFrameTime = now;    //save current frame as older than next 'now' values
+                                //resignated snake is not alive, so board is not refreshed
+                                if(snake.getLifeStatus() == LifeStatus.ALIVE){
+
+                                    //THIS COMMENT REFERS TO initBoard(true) method!!!
+                                    //overwrite all labels with starting arrangement
+                                    //WITHOUT allocatin new labels for board
+                                    //thanks to that, code is more optimal
+                                    //!!!because we dont need to call initLabelToGridAssignment!!!!!
+                                    initBoard(true);                //pass ONLY REFRESH argument, for more see method description
+                                    initWalls(peripheralWall);      //in case of destroyed wall, refresh all wall labels
+
+                                }
+                                roundsToPlay -= 1;                  //decrease
+                                System.out.println("Round " + (3 - roundsToPlay) + " ended");
+                            }else{
+                                System.out.println("Last round is done. GAME OVER. Relaunch app to play again ");
+                                Platform.exit();        //exit application
+                            }
+                        }
+                        previousFrameTime = now;            //save current frame as older than next 'now' values
                     }
-                    //comments below are partly done above
-                    //render
-                    //sync
-                }
-                else{
-                    
-                    if(turnsNumber>1){
-                        //preparation for new
-                        initImages();               //call Images initialization for further use
-                        initBoard();                //call board initialization method
-                        initLabelToGridAssignment();//bind board tiles to proper place in grid
-                        initWalls(peripheralWall);
-                        
-                        System.out.println("Lost");
-                        snake.SnakeReady(4, 5);
-                        turnsNumber=turnsNumber-1;
-                    
-                    }
-                    else
-                        System.out.println("Game over!");
-                    
-                }
             }
-            
+
         };
         timer.start();
     }

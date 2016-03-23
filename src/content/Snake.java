@@ -1,76 +1,76 @@
 package content;
 
+import javafx.scene.image.*;
 import javafx.scene.input.KeyCode;
 import java.awt.*;
+import javafx.scene.image.Image;
 import java.util.ArrayList;
 
 /**
  * Created by Michał Martyniak and company :P on 19.03.2016.
  */
+
 public class Snake {
     private Point head;             //coordinates of snake's head
     private ArrayList<Point> body;  //holds body segments
-    private KeyCode lastKey;        //direction variable, allow to continue snake's movement in that direction constantly
-    private int life;               //1==snakie is alive, 0== snake is dead, -1== player resigned
+    public KeyCode lastKey;        //direction variable, allow to continue snake's movement in that direction constantly
+    private Point lastTranslation;
+
     private int points;             //player's points
-    
+    private LifeStatus lifeStatus;  //to know more look a defined enum a few lines above this one ^
+    private Image image;
+
     /*  create snake that has ony HEAD with given coordinates   */
-    public Snake(int staryAtX, int startAtY) {
-        head = new Point(staryAtX,startAtY);      //head always exist
-        body = new ArrayList<>();                 //at the begining body is empty
+    public Snake(Point startingPoint) {
+        head = startingPoint;                     //head always exist
+        body = new ArrayList<>();                 //at the beginning body is empty
         lastKey = KeyCode.K;                      //no key is pressed at the beginning
-        life=1;                                   //snake is alive
+
+        points = 0;
+        lifeStatus = LifeStatus.ALIVE;            //snake is alive
+        image = new Image(getClass().getResourceAsStream("resources/blue.png"));
     }
 
-
+    public void move(BarrierType mask[][], Point translate){
+        //universal statement considering all cases of movement
+        if(mask[head.x + translate.x][head.y + translate.y] == BarrierType.EMPTY){
+            head.translate(translate.x, translate.y);   //x one left, y stays the same
+        }
+        else{//if label is not empty, then crash occurs
+            lifeStatus = LifeStatus.DEAD;
+        }
+    }
 
     /*  changes the coordinates of snake's head (and convert old head to new body element)  */
     //change to boolean later(for collision)
-    public void move(int[][] mask){
-       // body.add(head);                 //save head as a body now
+    public void considerAction(BarrierType[][] mask){
+        body.add(head);                             //save head as a body now
+
+        Point actualTranslation = new Point(0, 0);   //temporary helper that doesn't move our snake yet!!
+                                                    //it says, where snake should move
+                                                    //(proper value is after switch statement
         switch (lastKey){
             case L:
-                life=-1;
-                break;
+                lifeStatus = LifeStatus.RESIGNED;   //Snake gave up completely in that round
+                body.remove(body.size() - 1);       //! if adding head to body list was inappropriate
+                return;                             //EXIT whole method, no further instructions must be executed!
             case W:
-                if(mask[this.head.x][this.head.y-1] == BarrierType.EMPTY.value){        //check if              
-                    body.add(head);
-                    head.translate(0,-1);   //x stays the same, y one upper
-                }
-                else{
-                    this.setLife(0);
-                }
+                actualTranslation.y = -1;            //one up
                 break;
             case S:
-                if(mask[this.head.x][this.head.y+1] == BarrierType.EMPTY.value){
-                    body.add(head);
-                    head.translate(0,1);    //x stays the same, y one down
-                }
-                else{
-                    this.setLife(0);
-                }
+                actualTranslation.y = 1;             //one down
                 break;
             case A:
-                if(mask[this.head.x-1][this.head.y] == BarrierType.EMPTY.value){
-                    body.add(head);
-                    head.translate(-1,0);   //x one left, y stays the same              
-                }
-                else{
-                    this.setLife(0);
-                }
+                actualTranslation.x = -1;            //one left
                 break;
             case D:
-                if(mask[this.head.x+1][this.head.y] == BarrierType.EMPTY.value){
-                    body.add(head);
-                    head.translate(1,0);    //x one right, y stays the same
-                }
-                else{
-                    this.setLife(0);
-                }
+                actualTranslation.x = 1;             //one right
                 break;
-            default:                    //no other key is allowed currently(we can add something in here later)
-                break;
+            default:                                 //no key - skip that method
+                return;
         }
+        //actualTranslation holds always direction to which snake is following
+        move(mask, actualTranslation);
     }
 
     /*  returns only head coordinates (useful for drawing)  */
@@ -78,35 +78,40 @@ public class Snake {
         return head;
     }
 
+    public Image getImage(){
+        return image;
+    }
     /*  gets key from event and holds it as further direction   */
     public void setHead(KeyCode key){
         lastKey = key;
     }
     
     /*  returns value of life ^^ */
-    public int getLife(){
-        return life;
+    public LifeStatus getLifeStatus(){
+        return lifeStatus;
     }
-    
-    /*set snake's life value)*/
-    public void setLife(int value){
-        if(value==1||value==0||value==-1)
-            life=value;
+
+    /*set snake's life value. It is unused yet!*/
+    public void setLife(LifeStatus value){
+        lifeStatus = value;
     }
-    
-    
+
     /*  returns list of ALL coordinates that belong to that snake */
     public ArrayList<Point> wholeSnake(){
         ArrayList<Point> wholeSnakeList = body;
         wholeSnakeList.add(head);
         return wholeSnakeList;
     }
-    
-    public void SnakeReady(int staryAtX, int startAtY) {
-        head = new Point(staryAtX,startAtY);      //head always exist
-        body = new ArrayList<>(); 
-        if(life==0)                               //no when player resigned
-            life=1;
+
+    public void setLastKey(KeyCode key){
+        lastKey = key;
+    }
+    public void setReady(Point p) {
+        head = p;                           //head always exist
+        body = new ArrayList<>();
+        lastKey = KeyCode.K;
+        if(lifeStatus == LifeStatus.DEAD)   //Resigned players can't continue their game
+            lifeStatus = LifeStatus.ALIVE;
     }
 
     
