@@ -38,23 +38,25 @@ public class GraphicalInterface extends Application {
     private Image brick;                    //peripheral wall
     //-----------------------------
     //static
-    private final static int size = 40;     //in our board of labels width=height
+    private final static int constantDisplacement = 120; //constant variable which help to place GUI in right position
+    private final static int sizeWidth = 60;     //Width of our Label board 
+    private final static int sizeHeight = 29;     //Height our Label board 
     private static String windowName = "SNAKE - alpha compilation test";
-    private static int windowWidth = size * 20;
-    private static int windowHeight = size * 20;
+    private static int windowWidth = sizeWidth * 20;
+    private static int windowHeight = (sizeHeight * 20) + constantDisplacement; //how many round have to be done until the game ends
     private static int fps = 4;             //how many frames/moves are in one second
     private static int roundsToPlay = 3;    //how many round have to be done until the game ends
-
-    private Label[][] board = new Label[size][size];
-    private BarrierType[][] mask = new BarrierType[size][size]; //mask containing position of snakes, walls, etc
+    
+    private Label[][] board = new Label[sizeWidth][sizeHeight];
+    private BarrierType[][] mask = new BarrierType[sizeWidth][sizeHeight]; //mask containing position of snakes, walls, etc
 
 
     //----------------------------
     //methods
     /*  initializing just our board             */
     private void initBoard(boolean refreshOnly){
-        for(int x = 0; x < size; x++)
-            for(int y = 0; y < size; y++){
+        for(int x = 0; x < sizeWidth; x++)
+            for(int y = 0; y < sizeHeight; y++){
 
                 if(!refreshOnly)//important(if snake dies, we dont need to reallocate memory for labels
                     board[x][y] = new Label();                  //calling constructor
@@ -66,10 +68,11 @@ public class GraphicalInterface extends Application {
 
     /*  initializing as method name */
     private void initLabelToGridAssignment() {
-        for(int x = 0; x < size; x++)
-            for(int y = 0; y < size; y++){
+        for(int x = 0; x < sizeWidth; x++)
+            for(int y = 0; y < sizeHeight; y++){
                 GridPane.setConstraints(board[x][y],x,y);   //bind board tile to proper COLUMN and ROW in our grid
                 grid.getChildren().add(board[x][y]);        //finally add each of them
+                
             }
     }
 
@@ -84,7 +87,7 @@ public class GraphicalInterface extends Application {
     @Override                                //override javaFX native method
     public void init(){
         grid = new GridPane();
-        grid.setPadding(new Insets(0,0,0,0));    //0 pixel padding on each side
+        grid.setPadding(new Insets(constantDisplacement,0,0,0));    //0 pixel padding on each side
         grid.setVgap(0);                         //vertical spacing between each label
         grid.setHgap(0);                         //horizontal spacing
 
@@ -112,7 +115,7 @@ public class GraphicalInterface extends Application {
         mainScene = new Scene(grid,windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
 
         Snake snake = new Snake(new Point(9,9));
-        PeripheralWall peripheralWall = new PeripheralWall(size);
+        PeripheralWall peripheralWall = new PeripheralWall(sizeWidth, sizeHeight);
 
         //display wall only once
         initWalls(peripheralWall);
