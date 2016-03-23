@@ -13,8 +13,7 @@ import java.util.ArrayList;
 public class Snake {
     private Point head;             //coordinates of snake's head
     private ArrayList<Point> body;  //holds body segments
-    public KeyCode lastKey;        //direction variable, allow to continue snake's movement in that direction constantly
-    private Point lastTranslation;
+    private KeyCode lastKey;        //direction variable, allow to continue snake's movement in that direction constantly
 
     private int points;             //player's points
     private LifeStatus lifeStatus;  //to know more look a defined enum a few lines above this one ^
@@ -106,6 +105,7 @@ public class Snake {
     public void setLastKey(KeyCode key){
         lastKey = key;
     }
+
     public void setReady(Point p) {
         head = p;                           //head always exist
         body = new ArrayList<>();

@@ -100,7 +100,6 @@ public class GraphicalInterface extends Application {
             board[w.x][w.y].setGraphic(new ImageView(brick)); // adding walls 
             mask[w.x][w.y] = BarrierType.WALL; //upgrading mask
         }
-
     }
 
 
@@ -114,8 +113,6 @@ public class GraphicalInterface extends Application {
 
         Snake snake = new Snake(new Point(9,9));
         PeripheralWall peripheralWall = new PeripheralWall(size);
-        
-        
 
         //display wall only once
         initWalls(peripheralWall);
