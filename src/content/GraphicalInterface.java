@@ -1,5 +1,6 @@
 package content;
 
+import com.sun.javafx.geom.Rectangle;
 import javafx.application.Application;
 
 import javafx.application.Platform;
@@ -12,44 +13,59 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 
-import java.awt.*;
+import java.awt.Point;
 
 
 public class GraphicalInterface extends Application {
     //---------------------------
     //private
+    //javaFX windows and scene
     private Stage window;                   //entire window handler
     private Scene mainScene;                //scene that holds whole content
-    private GridPane grid;                  //layout to store our labels
+
+    //layouts
+    private BorderPane borderPane;          //holds boardGridPane and infoGridPane within
+    private GridPane boardGridPane;         //layout to store our labels(board)
+    private HBox infoGridPane;              //layout for info bar at the top of the window
 
     //Important for FPS calculations
     private long previousFrameTime;         //time in nanosecond of the latest frame
 
+    //images
     private Image bg;                       //background
     private Image brick;                    //peripheral wall
-    //-----------------------------
-    //static
-    private final static int constantDisplacement = 120; //constant variable which help to place GUI in right position
-    private final static int sizeWidth = 60;     //Width of our Label board 
-    private final static int sizeHeight = 29;     //Height our Label board 
-    private static String windowName = "SNAKE - alpha compilation test";
-    private static int windowWidth = sizeWidth * 20;
-    private static int windowHeight = (sizeHeight * 20) + constantDisplacement; //how many round have to be done until the game ends
-    private static int fps = 4;             //how many frames/moves are in one second
-    private static int roundsToPlay = 3;    //how many round have to be done until the game ends
-    
+    private Image infoBarBg;                //template from paint
+
+    //layout elements(childrens)
     private Label[][] board = new Label[sizeWidth][sizeHeight];
     private BarrierType[][] mask = new BarrierType[sizeWidth][sizeHeight]; //mask containing position of snakes, walls, etc
 
+    //-----------------------------
+    //static
+    private final static int infoBarHeight = 80;      //constant variable which determines InfoBar Height
+    private final static int sizeWidth = 60;          //Width of our Label board
+    private final static int sizeHeight = 29;         //Height our Label board
+
+    private static String windowName = "SNAKE - alpha compilation test";
+    private static int windowWidth = sizeWidth * 20;
+    private static int windowHeight = (sizeHeight * 20) + infoBarHeight; //how many round have to be done until the game ends
+
+    private static int fps = 4;             //how many frames/moves are in one second
+    private static int roundsToPlay = 3;    //how many round have to be done until the game ends
+    
 
     //----------------------------
     //methods
@@ -70,9 +86,8 @@ public class GraphicalInterface extends Application {
     private void initLabelToGridAssignment() {
         for(int x = 0; x < sizeWidth; x++)
             for(int y = 0; y < sizeHeight; y++){
-                GridPane.setConstraints(board[x][y],x,y);   //bind board tile to proper COLUMN and ROW in our grid
-                grid.getChildren().add(board[x][y]);        //finally add each of them
-                
+                GridPane.setConstraints(board[x][y],x,y);       //bind board tile to proper COLUMN and ROW in our grid
+                boardGridPane.getChildren().add(board[x][y]);   //finally add each of them
             }
     }
 
@@ -81,20 +96,35 @@ public class GraphicalInterface extends Application {
         //basic textures, we can use Colors instead of Images
         bg = new Image(getClass().getResourceAsStream("resources/bg.png"));   //bg - background
         brick = new Image(getClass().getResourceAsStream("resources/brick.png"));
+        infoBarBg = new Image(getClass().getResourceAsStream("resources/infoBar.png"));
     }
 
     /*  initializing variables/resources only   */
     @Override                                //override javaFX native method
     public void init(){
-        grid = new GridPane();
-        grid.setPadding(new Insets(constantDisplacement,0,0,0));    //0 pixel padding on each side
-        grid.setVgap(0);                         //vertical spacing between each label
-        grid.setHgap(0);                         //horizontal spacing
+        //moved here because Hbox requires InfoBg to be initialized
+        initImages();                   //call Images initialization for further use
 
-        initImages();               //call Images initialization for further use
-        initBoard(false);            //call board initialization method
-                                    //'false' means - force allocating memory for labels
-        initLabelToGridAssignment();//bind board tiles to proper place in grid
+        //TOP
+        infoGridPane = new HBox();
+        infoGridPane.setMinHeight(infoBarHeight);
+        infoGridPane.getChildren().add(new ImageView(infoBarBg));
+
+        //CENTER
+        boardGridPane = new GridPane();
+        boardGridPane.setPadding(new Insets(0,0,0,0));    //0 pixel padding on each side
+        boardGridPane.setVgap(0);                         //vertical spacing between each label
+        boardGridPane.setHgap(0);                         //horizontal spacing
+
+        //MAIN LAYOUT
+        borderPane = new BorderPane();
+        borderPane.setCenter(boardGridPane);              //board layout is in the center of main layout
+        borderPane.setTop(infoGridPane);
+
+
+        initBoard(false);               //call board initialization method
+                                        //'false' means - force allocating memory for labels
+        initLabelToGridAssignment();    //bind board tiles to proper place in grid
     }
     
     /* initializing walls*/
@@ -110,9 +140,9 @@ public class GraphicalInterface extends Application {
     @Override                               //override javaFX native method
     public void start(Stage primaryStage) throws Exception{
         window = primaryStage;              //must-have assignment
-        window.setTitle(windowName);   //window TITLE
+        window.setTitle(windowName);        //window TITLE
 
-        mainScene = new Scene(grid,windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
+        mainScene = new Scene(borderPane, windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
 
         Snake snake = new Snake(new Point(9,9));
         PeripheralWall peripheralWall = new PeripheralWall(sizeWidth, sizeHeight);
