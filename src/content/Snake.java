@@ -15,17 +15,19 @@ public class Snake {
     private ArrayList<Point> body;  //holds body segments
     private KeyCode lastKey;        //direction variable, allow to continue snake's movement in that direction constantly
 
-    private int points;             //player's points
+    private Integer points;             //player's points
     private LifeStatus lifeStatus;  //to know more look a defined enum a few lines above this one ^
     private Image image;
+    private String playerName;
 
     /*  create snake that has ony HEAD with given coordinates   */
-    public Snake(Point startingPoint) {
+    public Snake(Point startingPoint, String name) {
         head = startingPoint;                     //head always exist
         body = new ArrayList<>();                 //at the beginning body is empty
         lastKey = KeyCode.K;                      //no key is pressed at the beginning
 
         points = 0;
+        playerName=name;
         lifeStatus = LifeStatus.ALIVE;            //snake is alive
         image = new Image(getClass().getResourceAsStream("resources/blue.png"));
     }
@@ -80,6 +82,15 @@ public class Snake {
     public Image getImage(){
         return image;
     }
+    
+    public Integer getPoints(){
+        return points;
+    }
+    
+    public String getPlayerName(){
+        return playerName;
+    }
+    
     /*  gets key from event and holds it as further direction   */
     public void setHead(KeyCode key){
         lastKey = key;
