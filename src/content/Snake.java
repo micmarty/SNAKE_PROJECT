@@ -92,9 +92,7 @@ public class Snake {
     }
     
     /*  gets key from event and holds it as further direction   */
-    public void setHead(KeyCode key){
-        lastKey = key;
-    }
+
     
     /*  returns value of life ^^ */
     public LifeStatus getLifeStatus(){

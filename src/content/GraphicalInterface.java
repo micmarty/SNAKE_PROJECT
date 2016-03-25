@@ -212,7 +212,7 @@ public class GraphicalInterface extends Application {
         initWalls(peripheralWall);
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
-            snake.setHead(event.getCode());    //call snake method, to filter the input and choose further direction
+            snake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
             //event.consume();                 //don't allow to propagete event value further(next calls)
         };
 
@@ -230,7 +230,7 @@ public class GraphicalInterface extends Application {
             public void handle(long now) {
 
                     //helpful for managing frames, second is 10^9 nanoseconds
-                    long second = 1000000000;
+                    long second = 100000000;
                     long timeBetweenFrames = now - previousFrameTime;
 
                     //simplifying must-have statements (right side returns TRUE or FALSE)
