@@ -39,20 +39,28 @@ public class GraphicalInterface extends Application {
     //layouts
     private BorderPane borderPane;          //holds boardGridPane and infoGridPane within
     private GridPane boardGridPane;         //layout to store our labels(board)
-    private HBox infoGridPane;              //layout for info bar at the top of the window
-
+    private GridPane infoGridPane;              //layout for info bar at the top of the window
+    
     //Important for FPS calculations
     private long previousFrameTime;         //time in nanosecond of the latest frame
+    
+    //important for game
+    private Integer playerNumber = 4;
+    private Integer tourNumber = 1;
+    private Snake[] snakes = new Snake[playerNumber];
 
     //images
     private Image bg;                       //background
     private Image brick;                    //peripheral wall
     private Image infoBarBg;                //template from paint
+    private Image white;  
 
     //layout elements(childrens)
     private Label[][] board = new Label[sizeWidth][sizeHeight];
     private BarrierType[][] mask = new BarrierType[sizeWidth][sizeHeight]; //mask containing position of snakes, walls, etc
-
+    private Label[] names = new Label[playerNumber];
+    private Label[] scores = new Label[playerNumber];
+    private Label tour;
     //-----------------------------
     //static
     private final static int infoBarHeight = 80;      //constant variable which determines InfoBar Height
@@ -64,13 +72,13 @@ public class GraphicalInterface extends Application {
     private static int windowHeight = (sizeHeight * 20) + infoBarHeight; //how many round have to be done until the game ends
 
     private static int fps = 4;             //how many frames/moves are in one second
-    private static int roundsToPlay = 3;    //how many round have to be done until the game ends
     
 
     //----------------------------
     //methods
     /*  initializing just our board             */
     private void initBoard(boolean refreshOnly){
+        
         for(int x = 0; x < sizeWidth; x++)
             for(int y = 0; y < sizeHeight; y++){
 
@@ -80,6 +88,7 @@ public class GraphicalInterface extends Application {
                 mask[x][y] = BarrierType.EMPTY;             //updating mask
 
             }
+        
     }
 
     /*  initializing as method name */
@@ -97,18 +106,51 @@ public class GraphicalInterface extends Application {
         bg = new Image(getClass().getResourceAsStream("resources/bg.png"));   //bg - background
         brick = new Image(getClass().getResourceAsStream("resources/brick.png"));
         infoBarBg = new Image(getClass().getResourceAsStream("resources/infoBar.png"));
+        
     }
-
+    
+    /*set the attributes for label*/
+    private void setter(Label label, int position){
+        infoGridPane.setConstraints(label,0,0);
+        infoGridPane.setMargin(label,new Insets(0,0,0,position));
+        infoGridPane.getChildren().add(label);
+    
+    }
+    
+    /*initializing names on top*/
+    private void initNames(){
+        for(int i=0; i<playerNumber; i++){
+        names[i]=new Label(snakes[i].getPlayerName());
+        setter(names[i], 80+i*265);
+        }
+    }
+/*initializing scores and number of tour on top*/
+    private void initScoreAndTour(){
+        for(int i=0; i<playerNumber; i++){
+            scores[i]=new Label(snakes[i].getPoints().toString());
+            setter(scores[i],220+i*265);          
+        }            	
+            tour=new Label("tura: "+tourNumber);
+            setter(tour,1100);
+    }
+    
     /*  initializing variables/resources only   */
     @Override                                //override javaFX native method
     public void init(){
+        //to change, need asking about names
+        snakes[0] = new Snake (new Point (1,1), "Ada");
+        snakes[1] = new Snake (new Point (21,1), "Michal");
+        snakes[2] = new Snake (new Point (5,1), "Mateusz");
+        snakes[3] = new Snake (new Point (8,1), "Ania");
+        
         //moved here because Hbox requires InfoBg to be initialized
         initImages();                   //call Images initialization for further use
 
         //TOP
-        infoGridPane = new HBox();
+        infoGridPane = new GridPane();        
         infoGridPane.setMinHeight(infoBarHeight);
         infoGridPane.getChildren().add(new ImageView(infoBarBg));
+        
 
         //CENTER
         boardGridPane = new GridPane();
@@ -125,6 +167,8 @@ public class GraphicalInterface extends Application {
         initBoard(false);               //call board initialization method
                                         //'false' means - force allocating memory for labels
         initLabelToGridAssignment();    //bind board tiles to proper place in grid
+        initNames();
+        initScoreAndTour();
     }
     
     /* initializing walls*/
@@ -134,7 +178,18 @@ public class GraphicalInterface extends Application {
             mask[w.x][w.y] = BarrierType.WALL; //upgrading mask
         }
     }
-
+    
+    /*initalizing new tour*/
+    
+    public void newTour(){
+        System.out.println("Round " + tourNumber + " ended");
+        tourNumber+=1;
+        for(int i=0; i<playerNumber; i++){
+            infoGridPane.getChildren().remove(scores[i]);
+        }
+        infoGridPane.getChildren().remove(tour);
+        initScoreAndTour();
+    }
 
     //IT IS TECHNICALLY OUR MAIN //(learned from documentation)
     @Override                               //override javaFX native method
@@ -143,8 +198,14 @@ public class GraphicalInterface extends Application {
         window.setTitle(windowName);        //window TITLE
 
         mainScene = new Scene(borderPane, windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
-
-        Snake snake = new Snake(new Point(9,9));
+      
+        Snake snake = new Snake(new Point(9,9), "Ziomek");
+        
+        
+        
+        Integer temp;
+        temp= snakes[3].getPoints();
+        
         PeripheralWall peripheralWall = new PeripheralWall(sizeWidth, sizeHeight);
 
         //display wall only once
@@ -187,7 +248,7 @@ public class GraphicalInterface extends Application {
                             board[h.x][h.y].setGraphic(new ImageView(snake.getImage()));
                             mask[h.x][h.y] = BarrierType.BLUE_SNAKE;
                         }else{//is DEAD or RESIGNED
-                            if(roundsToPlay > 1) {              //there's no sense in rebuilding game, when it was the least
+                            if(tourNumber<10) {              //there's no sense in rebuilding game, when it was the least
                                 //if sneak is dead, this method makes him alive again
                                 snake.setReady(new Point(9, 9));
 
@@ -203,8 +264,8 @@ public class GraphicalInterface extends Application {
                                     initWalls(peripheralWall);      //in case of destroyed wall, refresh all wall labels
 
                                 }
-                                roundsToPlay -= 1;                  //decrease
-                                System.out.println("Round " + (3 - roundsToPlay) + " ended");
+                                newTour();
+                                
                             }else{
                                 System.out.println("Last round is done. GAME OVER. Relaunch app to play again ");
                                 Platform.exit();        //exit application
