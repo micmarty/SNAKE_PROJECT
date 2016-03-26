@@ -19,6 +19,9 @@ public class Snake {
     private LifeStatus lifeStatus;  //to know more look a defined enum a few lines above this one ^
     private Image image;
     private String playerName;
+    
+    private Integer timeOfDeath;
+    private Integer stepNumber;
 
     /*  create snake that has ony HEAD with given coordinates   */
     public Snake(Point startingPoint, String name, SnakeColor color) {
@@ -29,6 +32,10 @@ public class Snake {
         points = 0;
         playerName=name;
         lifeStatus = LifeStatus.ALIVE;            //snake is alive
+        
+        timeOfDeath = null;
+        stepNumber = 0;
+        
         switch(color){
             case Red:
                 image = new Image(getClass().getResourceAsStream("resources/red.png"));
@@ -44,14 +51,20 @@ public class Snake {
                 break; 
         }
     }
+    
+    public void kill(){
+        lifeStatus = LifeStatus.DEAD;
+        timeOfDeath = stepNumber;       //so we could know after how many steps we died
+    }
 
     public void move(BarrierType mask[][], Point translate){
         //universal statement considering all cases of movement
         if(mask[head.x + translate.x][head.y + translate.y] == BarrierType.EMPTY){
             head.translate(translate.x, translate.y);   //x one left, y stays the same
+            stepNumber++;
         }
         else{//if label is not empty, then crash occurs
-            lifeStatus = LifeStatus.DEAD;
+            kill();  
         }
     }
 
@@ -130,9 +143,19 @@ public class Snake {
         head = startingPoint;                           //head always exist
         body = new ArrayList<>();
         lastKey = null;
-        if(lifeStatus == LifeStatus.DEAD)   //Resigned players can't continue their game
-            lifeStatus = LifeStatus.ALIVE;
+        if(lifeStatus == LifeStatus.DEAD){   //Resigned players can't continue their game
+            lifeStatus = LifeStatus.ALIVE; 
+        }
+        timeOfDeath = null;
+        stepNumber = 0;
     }
 
+    public Integer getTimeOfDeath(){
+        return timeOfDeath;
+    }
     
+    public void addPoints(Integer reward){
+        points += reward;
+    }
+
 }
