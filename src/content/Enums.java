@@ -26,3 +26,11 @@ enum BarrierType {
         this.value = value;
     }
 }
+
+
+enum SnakeColor {
+    Red,
+    Green,
+    Blue,
+    Yellow
+}

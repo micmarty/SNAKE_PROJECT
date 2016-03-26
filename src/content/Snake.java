@@ -21,7 +21,7 @@ public class Snake {
     private String playerName;
 
     /*  create snake that has ony HEAD with given coordinates   */
-    public Snake(Point startingPoint, String name) {
+    public Snake(Point startingPoint, String name, SnakeColor color) {
         head = startingPoint;                     //head always exist
         body = new ArrayList<>();                 //at the beginning body is empty
         lastKey = null;                      //no key is pressed at the beginning
@@ -29,7 +29,20 @@ public class Snake {
         points = 0;
         playerName=name;
         lifeStatus = LifeStatus.ALIVE;            //snake is alive
-        image = new Image(getClass().getResourceAsStream("resources/blue.png"));
+        switch(color){
+            case Red:
+                image = new Image(getClass().getResourceAsStream("resources/red.png"));
+                break; 
+            case Green:
+                image = new Image(getClass().getResourceAsStream("resources/green.png"));
+                break; 
+            case Blue:
+                image = new Image(getClass().getResourceAsStream("resources/blue.png"));
+                break; 
+            case Yellow:
+                image = new Image(getClass().getResourceAsStream("resources/yellow.png"));
+                break; 
+        }
     }
 
     public void move(BarrierType mask[][], Point translate){
@@ -49,29 +62,30 @@ public class Snake {
 
         Point actualTranslation = new Point(0, 0);   //temporary helper that doesn't move our snake yet!!
                                                     //it says, where snake should move
-                                                    //(proper value is after switch statement
-        switch (lastKey){
-            case L:
-                lifeStatus = LifeStatus.RESIGNED;   //Snake gave up completely in that round
-                body.remove(body.size() - 1);       //! if adding head to body list was inappropriate
-                return;                             //EXIT whole method, no further instructions must be executed!
-            case W:
-                actualTranslation.y = -1;            //one up
-                break;
-            case S:
-                actualTranslation.y = 1;             //one down
-                break;
-            case A:
-                actualTranslation.x = -1;            //one left
-                break;
-            case D:
-                actualTranslation.x = 1;             //one right
-                break;
-            default:                                 //no key - skip that method
-                return;
+        if(lastKey != null){                                            //(proper value is after switch statement
+            switch (lastKey){
+                case L:
+                    lifeStatus = LifeStatus.RESIGNED;   //Snake gave up completely in that round
+                    body.remove(body.size() - 1);       //! if adding head to body list was inappropriate
+                    return;                             //EXIT whole method, no further instructions must be executed!
+                case W:
+                    actualTranslation.y = -1;            //one up
+                    break;
+                case S:
+                    actualTranslation.y = 1;             //one down
+                    break;
+                case A:
+                    actualTranslation.x = -1;            //one left
+                    break;
+                case D:
+                    actualTranslation.x = 1;             //one right
+                    break;
+                default:                                 //no key - skip that method
+                    return;
+            }
+            //actualTranslation holds always direction to which snake is following
+            move(mask, actualTranslation);
         }
-        //actualTranslation holds always direction to which snake is following
-        move(mask, actualTranslation);
     }
 
     /*  returns only head coordinates (useful for drawing)  */

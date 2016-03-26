@@ -46,6 +46,7 @@ public class GraphicalInterface extends Application {
     
     //important for game
     private Integer playersCount = 4;
+    private Integer playerId = 3;
     private Integer roundNumber = 1;
     private Snake[] snakes = new Snake[playersCount];
 
@@ -120,8 +121,8 @@ public class GraphicalInterface extends Application {
     /*initializing names on top*/
     private void initNames(){
         for(int i=0; i<playersCount; i++){
-        names[i]=new Label(snakes[i].getPlayerName());
-        setter(names[i], 80+i*265);
+            names[i]=new Label(snakes[i].getPlayerName());
+            setter(names[i], 80+i*265);
         }
     }
 /*initializing scores and number of tour on top*/
@@ -130,18 +131,18 @@ public class GraphicalInterface extends Application {
             scores[i]=new Label(snakes[i].getPoints().toString());
             setter(scores[i],220+i*265);          
         }            	
-            round=new Label("tura: "+roundNumber);
-            setter(round,1100);
+        round=new Label("tura: "+roundNumber);
+        setter(round,1100);
     }
     
     /*  initializing variables/resources only   */
     @Override                                //override javaFX native method
     public void init(){
         //to change, need asking about names
-        snakes[0] = new Snake (new Point (1,1), "Ada");
-        snakes[1] = new Snake (new Point (21,1), "Michal");
-        snakes[2] = new Snake (new Point (5,1), "Mateusz");
-        snakes[3] = new Snake (new Point (8,1), "Ania");
+        snakes[0] = new Snake (new Point (1,1), "Ada", SnakeColor.Red);
+        snakes[1] = new Snake (new Point (21,1), "Mateusz", SnakeColor.Blue);
+        snakes[2] = new Snake (new Point (5,1), "Michal", SnakeColor.Green);
+        snakes[3] = new Snake (new Point (8,1), "Ania", SnakeColor.Yellow);
         
         //moved here because Hbox requires InfoBg to be initialized
         initImages();                   //call Images initialization for further use
@@ -199,12 +200,12 @@ public class GraphicalInterface extends Application {
 
         mainScene = new Scene(borderPane, windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
       
-        Snake snake = new Snake(new Point(9,9), "Ziomek");
-        
+        //Snake snake = new Snake(new Point(9,9), "Ziomek");
+        Snake currentSnake = snakes[playerId];
         
         
         Integer temp;
-        temp= snakes[3].getPoints();
+        temp= currentSnake.getPoints();
         
         PeripheralWall peripheralWall = new PeripheralWall(sizeWidth, sizeHeight);
 
@@ -212,7 +213,7 @@ public class GraphicalInterface extends Application {
         initWalls(peripheralWall);
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
-            snake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
+            currentSnake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
             //event.consume();                 //don't allow to propagete event value further(next calls)
         };
 
@@ -234,26 +235,26 @@ public class GraphicalInterface extends Application {
                     long timeBetweenFrames = now - previousFrameTime;
 
                     //simplifying must-have statements (right side returns TRUE or FALSE)
-                    boolean isAlive = (snake.getLifeStatus() == LifeStatus.ALIVE);
+                    boolean isAlive = (snakes[playerId].getLifeStatus() == LifeStatus.ALIVE);
                     boolean isProperFrame = (second/timeBetweenFrames <= fps || previousFrameTime == 0);
 
                     //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                     // (because previousFrameTime is 0 before hitting the  if statement;
                     if(isProperFrame){
                         if(isAlive){
-                            snake.considerAction(mask);         //update snake's position
+                            snakes[playerId].considerAction(mask);         //update snake's position
 
                             //refresh/add only head to the board, more optimal solution
-                            Point h = snake.getHead();          //h for shortcut in line below
-                            board[h.x][h.y].setGraphic(new ImageView(snake.getImage()));
+                            Point h = snakes[playerId].getHead();          //h for shortcut in line below
+                            board[h.x][h.y].setGraphic(new ImageView(snakes[playerId].getImage()));
                             mask[h.x][h.y] = BarrierType.BLUE_SNAKE;
                         }else{//is DEAD or RESIGNED
                             if(roundNumber<10) {              //there's no sense in rebuilding game, when it was the least
                                 //if sneak is dead, this method makes him alive again
-                                snake.setReady(new Point(9, 9));
+                                snakes[playerId].setReady(new Point(9, 9));
 
                                 //resignated snake is not alive, so board is not refreshed
-                                if(snake.getLifeStatus() == LifeStatus.ALIVE){
+                                if(snakes[playerId].getLifeStatus() == LifeStatus.ALIVE){
 
                                     //THIS COMMENT REFERS TO initBoard(true) method!!!
                                     //overwrite all labels with starting arrangement
