@@ -45,9 +45,9 @@ public class GraphicalInterface extends Application {
     private long previousFrameTime;         //time in nanosecond of the latest frame
     
     //important for game
-    private Integer playerNumber = 4;
-    private Integer tourNumber = 1;
-    private Snake[] snakes = new Snake[playerNumber];
+    private Integer playersCount = 4;
+    private Integer roundNumber = 1;
+    private Snake[] snakes = new Snake[playersCount];
 
     //images
     private Image bg;                       //background
@@ -58,9 +58,9 @@ public class GraphicalInterface extends Application {
     //layout elements(childrens)
     private Label[][] board = new Label[sizeWidth][sizeHeight];
     private BarrierType[][] mask = new BarrierType[sizeWidth][sizeHeight]; //mask containing position of snakes, walls, etc
-    private Label[] names = new Label[playerNumber];
-    private Label[] scores = new Label[playerNumber];
-    private Label tour;
+    private Label[] names = new Label[playersCount];
+    private Label[] scores = new Label[playersCount];
+    private Label round;
     //-----------------------------
     //static
     private final static int infoBarHeight = 80;      //constant variable which determines InfoBar Height
@@ -119,19 +119,19 @@ public class GraphicalInterface extends Application {
     
     /*initializing names on top*/
     private void initNames(){
-        for(int i=0; i<playerNumber; i++){
+        for(int i=0; i<playersCount; i++){
         names[i]=new Label(snakes[i].getPlayerName());
         setter(names[i], 80+i*265);
         }
     }
 /*initializing scores and number of tour on top*/
     private void initScoreAndTour(){
-        for(int i=0; i<playerNumber; i++){
+        for(int i=0; i<playersCount; i++){
             scores[i]=new Label(snakes[i].getPoints().toString());
             setter(scores[i],220+i*265);          
         }            	
-            tour=new Label("tura: "+tourNumber);
-            setter(tour,1100);
+            round=new Label("tura: "+roundNumber);
+            setter(round,1100);
     }
     
     /*  initializing variables/resources only   */
@@ -182,12 +182,12 @@ public class GraphicalInterface extends Application {
     /*initalizing new tour*/
     
     public void newTour(){
-        System.out.println("Round " + tourNumber + " ended");
-        tourNumber+=1;
-        for(int i=0; i<playerNumber; i++){
+        System.out.println("Round " + roundNumber + " ended");
+        roundNumber+=1;
+        for(int i=0; i<playersCount; i++){
             infoGridPane.getChildren().remove(scores[i]);
         }
-        infoGridPane.getChildren().remove(tour);
+        infoGridPane.getChildren().remove(round);
         initScoreAndTour();
     }
 
@@ -212,7 +212,7 @@ public class GraphicalInterface extends Application {
         initWalls(peripheralWall);
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
-            snake.setHead(event.getCode());    //call snake method, to filter the input and choose further direction
+            snake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
             //event.consume();                 //don't allow to propagete event value further(next calls)
         };
 
@@ -248,7 +248,7 @@ public class GraphicalInterface extends Application {
                             board[h.x][h.y].setGraphic(new ImageView(snake.getImage()));
                             mask[h.x][h.y] = BarrierType.BLUE_SNAKE;
                         }else{//is DEAD or RESIGNED
-                            if(tourNumber<10) {              //there's no sense in rebuilding game, when it was the least
+                            if(roundNumber<10) {              //there's no sense in rebuilding game, when it was the least
                                 //if sneak is dead, this method makes him alive again
                                 snake.setReady(new Point(9, 9));
 
