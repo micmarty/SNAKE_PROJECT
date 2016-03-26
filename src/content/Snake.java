@@ -24,7 +24,7 @@ public class Snake {
     public Snake(Point startingPoint, String name) {
         head = startingPoint;                     //head always exist
         body = new ArrayList<>();                 //at the beginning body is empty
-        lastKey = KeyCode.K;                      //no key is pressed at the beginning
+        lastKey = null;                      //no key is pressed at the beginning
 
         points = 0;
         playerName=name;
@@ -91,11 +91,6 @@ public class Snake {
         return playerName;
     }
     
-    /*  gets key from event and holds it as further direction   */
-    public void setHead(KeyCode key){
-        lastKey = key;
-    }
-    
     /*  returns value of life ^^ */
     public LifeStatus getLifeStatus(){
         return lifeStatus;
@@ -117,10 +112,10 @@ public class Snake {
         lastKey = key;
     }
 
-    public void setReady(Point p) {
-        head = p;                           //head always exist
+    public void setReady(Point startingPoint) {
+        head = startingPoint;                           //head always exist
         body = new ArrayList<>();
-        lastKey = KeyCode.K;
+        lastKey = null;
         if(lifeStatus == LifeStatus.DEAD)   //Resigned players can't continue their game
             lifeStatus = LifeStatus.ALIVE;
     }
