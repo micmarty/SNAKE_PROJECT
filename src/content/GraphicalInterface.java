@@ -27,6 +27,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.layout.GridPane;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 public class GraphicalInterface extends Application {
@@ -46,8 +50,12 @@ public class GraphicalInterface extends Application {
     
     //important for game
     private Integer playersCount = 4;
+    private Integer playerId = 3;
     private Integer roundNumber = 1;
     private Snake[] snakes = new Snake[playersCount];
+    
+    
+    private Integer[] rewards = new Integer[]{0, 1, 2, 3};
 
     //images
     private Image bg;                       //background
@@ -120,28 +128,44 @@ public class GraphicalInterface extends Application {
     /*initializing names on top*/
     private void initNames(){
         for(int i=0; i<playersCount; i++){
-        names[i]=new Label(snakes[i].getPlayerName());
-        setter(names[i], 80+i*265);
+            names[i]=new Label(snakes[i].getPlayerName());
+            setter(names[i], 80+i*265);
         }
     }
+    
 /*initializing scores and number of tour on top*/
-    private void initScoreAndTour(){
+    private void initScoreAndRound(){
         for(int i=0; i<playersCount; i++){
-            scores[i]=new Label(snakes[i].getPoints().toString());
+            scores[i] = new Label(snakes[i].getPoints().toString());
             setter(scores[i],220+i*265);          
         }            	
-            round=new Label("tura: "+roundNumber);
-            setter(round,1100);
+        round = new Label("tura: "+roundNumber);
+        setter(round,1100);
     }
+    
+    private void updateScores(){
+        for(int i=0; i<playersCount; i++){
+            scores[i].setText(snakes[i].getPoints().toString());
+        }
+    }
+    
+    private void updateRound(){
+        round.setText("tura: "+roundNumber);
+    }
+    
     
     /*  initializing variables/resources only   */
     @Override                                //override javaFX native method
     public void init(){
         //to change, need asking about names
-        snakes[0] = new Snake (new Point (1,1), "Ada");
-        snakes[1] = new Snake (new Point (21,1), "Michal");
-        snakes[2] = new Snake (new Point (5,1), "Mateusz");
-        snakes[3] = new Snake (new Point (8,1), "Ania");
+        snakes[0] = new Snake (new Point (1,1), "Ada", SnakeColor.Red);
+        snakes[1] = new Snake (new Point (21,1), "Mateusz", SnakeColor.Blue);
+        snakes[2] = new Snake (new Point (5,1), "Michal", SnakeColor.Green);
+        snakes[3] = new Snake (new Point (8,1), "Ania", SnakeColor.Yellow);
+        
+        snakes[0].kill();
+        snakes[1].kill();
+        snakes[2].kill();
         
         //moved here because Hbox requires InfoBg to be initialized
         initImages();                   //call Images initialization for further use
@@ -168,7 +192,7 @@ public class GraphicalInterface extends Application {
                                         //'false' means - force allocating memory for labels
         initLabelToGridAssignment();    //bind board tiles to proper place in grid
         initNames();
-        initScoreAndTour();
+        initScoreAndRound();
     }
     
     /* initializing walls*/
@@ -179,16 +203,40 @@ public class GraphicalInterface extends Application {
         }
     }
     
-    /*initalizing new tour*/
-    
-    public void newTour(){
+    public void endRound(){
         System.out.println("Round " + roundNumber + " ended");
-        roundNumber+=1;
-        for(int i=0; i<playersCount; i++){
-            infoGridPane.getChildren().remove(scores[i]);
+        
+        List<Snake> sortedSnakes = new ArrayList<Snake>(Arrays.asList(snakes));     //Arrays.asList() changes array into a list
+        Collections.sort(sortedSnakes, new TimeOfDeathComparator());
+        
+        int prevReward = 0;
+        int nextReward = 0;
+        for(int i = 0; i < playersCount; i++){
+            if (i == 0){
+                sortedSnakes.get(0).addPoints(rewards[nextReward]);
+                prevReward = nextReward;
+                nextReward++;
+            }
+            else{
+                if(sortedSnakes.get(i).getTimeOfDeath().equals(sortedSnakes.get(i - 1).getTimeOfDeath())){
+                    sortedSnakes.get(i).addPoints(rewards[prevReward]);
+                    nextReward++;
+                }
+                else{
+                    sortedSnakes.get(i).addPoints(rewards[nextReward]);
+                    prevReward = nextReward;
+                    nextReward++;
+                }
+            }
         }
-        infoGridPane.getChildren().remove(round);
-        initScoreAndTour();
+        updateScores();
+    }
+    
+    /*initalizing new round*/
+    
+    public void newRound(){
+        roundNumber+=1;
+        updateRound();
     }
 
     //IT IS TECHNICALLY OUR MAIN //(learned from documentation)
@@ -199,12 +247,12 @@ public class GraphicalInterface extends Application {
 
         mainScene = new Scene(borderPane, windowWidth,windowHeight);//10 left padding, 40*20 tiles space, 10 right padding
       
-        Snake snake = new Snake(new Point(9,9), "Ziomek");
-        
+        //Snake snake = new Snake(new Point(9,9), "Ziomek");
+        Snake currentSnake = snakes[playerId];
         
         
         Integer temp;
-        temp= snakes[3].getPoints();
+        temp= currentSnake.getPoints();
         
         PeripheralWall peripheralWall = new PeripheralWall(sizeWidth, sizeHeight);
 
@@ -212,7 +260,7 @@ public class GraphicalInterface extends Application {
         initWalls(peripheralWall);
         //EVENT FOR KEYBOARD
         EventHandler<KeyEvent> keyEventEventHandler = event -> {
-            snake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
+            currentSnake.setLastKey(event.getCode());    //call snake method, to filter the input and choose further direction
             //event.consume();                 //don't allow to propagete event value further(next calls)
         };
 
@@ -234,26 +282,28 @@ public class GraphicalInterface extends Application {
                     long timeBetweenFrames = now - previousFrameTime;
 
                     //simplifying must-have statements (right side returns TRUE or FALSE)
-                    boolean isAlive = (snake.getLifeStatus() == LifeStatus.ALIVE);
+                    boolean isAlive = (snakes[playerId].getLifeStatus() == LifeStatus.ALIVE);
                     boolean isProperFrame = (second/timeBetweenFrames <= fps || previousFrameTime == 0);
 
                     //FPS = 1s/timeBetweenFrames or if it's first frame!!!
                     // (because previousFrameTime is 0 before hitting the  if statement;
                     if(isProperFrame){
                         if(isAlive){
-                            snake.considerAction(mask);         //update snake's position
+                            snakes[playerId].considerAction(mask);         //update snake's position
 
                             //refresh/add only head to the board, more optimal solution
-                            Point h = snake.getHead();          //h for shortcut in line below
-                            board[h.x][h.y].setGraphic(new ImageView(snake.getImage()));
-                            mask[h.x][h.y] = BarrierType.BLUE_SNAKE;
+                            Point h = snakes[playerId].getHead();          //h for shortcut in line below
+                            board[h.x][h.y].setGraphic(new ImageView(snakes[playerId].getImage()));
+                            mask[h.x][h.y] = BarrierType.SNAKE;
                         }else{//is DEAD or RESIGNED
-                            if(roundNumber<10) {              //there's no sense in rebuilding game, when it was the least
+                            if(roundNumber<10) {
+                                endRound();
+                                //there's no sense in rebuilding game, when it was the least
                                 //if sneak is dead, this method makes him alive again
-                                snake.setReady(new Point(9, 9));
+                                snakes[playerId].setReady(new Point(9, 9));
 
                                 //resignated snake is not alive, so board is not refreshed
-                                if(snake.getLifeStatus() == LifeStatus.ALIVE){
+                                if(snakes[playerId].getLifeStatus() == LifeStatus.ALIVE){
 
                                     //THIS COMMENT REFERS TO initBoard(true) method!!!
                                     //overwrite all labels with starting arrangement
@@ -264,7 +314,7 @@ public class GraphicalInterface extends Application {
                                     initWalls(peripheralWall);      //in case of destroyed wall, refresh all wall labels
 
                                 }
-                                newTour();
+                                newRound();
                                 
                             }else{
                                 System.out.println("Last round is done. GAME OVER. Relaunch app to play again ");

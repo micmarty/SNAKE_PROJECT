@@ -17,7 +17,7 @@ enum LifeStatus {
 //Enum holding types of barriers
 enum BarrierType {
     EMPTY(0),
-    BLUE_SNAKE(1),
+    SNAKE(1),
     WALL(9);
     public final int value;
 
@@ -25,4 +25,12 @@ enum BarrierType {
     BarrierType(int value) {
         this.value = value;
     }
+}
+
+
+enum SnakeColor {
+    Red,
+    Green,
+    Blue,
+    Yellow
 }
